@@ -2,7 +2,7 @@ pub mod bitmap;
 
 // Utils Functions
 pub fn u32_from_le_bytes(bytes: &[u8]) -> u32 {
-    if bytes.len() == 0 {
+    if bytes.len() < 4 {
         return 0;
     }
 
@@ -15,7 +15,7 @@ pub fn u32_from_le_bytes(bytes: &[u8]) -> u32 {
 }
 
 pub fn i32_from_le_bytes(bytes: &[u8]) -> i32 {
-    if bytes.len() == 0 {
+    if bytes.len() < 4 {
         return 0;
     }
 
