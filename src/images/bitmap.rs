@@ -24,6 +24,10 @@ impl Bitmap {
             buffer,
         })
     }
+
+    pub fn save(&self, _path: impl Into<String>) -> IOResult<()> {
+        Ok(())
+    }
 }
 
 struct FileHeader {
