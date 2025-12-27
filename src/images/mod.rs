@@ -1,5 +1,13 @@
 pub mod bitmap;
 
+#[derive(Default, Clone)]
+pub struct RGB {
+    pub red: u8,
+    pub green: u8,
+    pub blue: u8,
+    pub alpha: Option<u8>,
+}
+
 // Utils Functions
 pub fn u32_from_le_bytes(bytes: &[u8]) -> u32 {
     if bytes.len() < 4 {

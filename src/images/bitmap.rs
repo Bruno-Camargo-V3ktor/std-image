@@ -1,4 +1,4 @@
-use super::{i32_from_le_bytes, u32_from_le_bytes};
+use super::{RGB, i32_from_le_bytes, u32_from_le_bytes};
 use std::fs::File;
 use std::io::{Read, Result as IOResult};
 use std::usize;
@@ -16,7 +16,7 @@ impl Bitmap {
 
         let file_header = FileHeader::new(&mut image);
         let dib_header = DIBHeader::new(&mut image);
-        let buffer = Buffer { pixels: vec![] };
+        let buffer = Buffer::new(&mut image, &dib_header);
 
         Ok(Self {
             file_header,
@@ -88,7 +88,45 @@ impl DIBHeader {
 }
 
 struct Buffer {
-    pub pixels: Vec<u32>,
+    pub pixels: Vec<RGB>,
+}
+
+impl Buffer {
+    pub fn new(image: &mut File, dib: &DIBHeader) -> Self {
+        let padding = {
+            let i = (dib.width * (dib.pixels as i32)) % 4;
+            if i == 0 { 0 } else { (4 - i) as usize }
+        };
+
+        let total_pixels = i32::abs(dib.width * dib.height);
+        let bytes_per_pixels = dib.pixels / 8;
+
+        let mut extract = vec![0_u8; (total_pixels * (bytes_per_pixels) as i32) as usize];
+        let mut pixels = vec![RGB::default(); total_pixels as usize];
+
+        image.read_exact(&mut extract).unwrap();
+
+        let mut index = extract.len() - 1;
+
+        for _ in 0..i32::abs(dib.height) {
+            index -= padding;
+            for _ in 0..i32::abs(dib.width) {
+                let pixel = pixels.get_mut(index / 3).unwrap();
+                for i in 0..bytes_per_pixels {
+                    match i {
+                        0 => pixel.red = extract[index],
+                        1 => pixel.green = extract[index],
+                        2 => pixel.blue = extract[index],
+                        _ => pixel.alpha = Some(extract[index]),
+                    }
+
+                    index = index.checked_sub(1).unwrap_or(0);
+                }
+            }
+        }
+
+        Self { pixels }
+    }
 }
 
 #[test]
@@ -112,4 +150,17 @@ fn dib_header() {
     assert_eq!(-400, dib_header.height);
     assert_eq!(24, dib_header.pixels);
     assert_eq!(720002, dib_header.raw_size);
+}
+
+#[test]
+pub fn buffer() {
+    let mut image = File::open("./images/tower.bmp").unwrap();
+    let _file_header = FileHeader::new(&mut image);
+    let dib_header = DIBHeader::new(&mut image);
+    let buffer = Buffer::new(&mut image, &dib_header);
+
+    assert_eq!(240000, buffer.pixels.len());
+    assert_eq!(0, buffer.pixels[0].red);
+    assert_eq!(56, buffer.pixels[0].green);
+    assert_eq!(117, buffer.pixels[0].blue);
 }
