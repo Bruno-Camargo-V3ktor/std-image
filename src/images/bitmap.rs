@@ -1,6 +1,6 @@
 use super::{RGB, i32_from_le_bytes, u32_from_le_bytes};
 use std::fs::File;
-use std::io::{Read, Result as IOResult};
+use std::io::{Read, Result as IOResult, Write};
 use std::usize;
 
 pub struct Bitmap {
@@ -25,7 +25,13 @@ impl Bitmap {
         })
     }
 
-    pub fn save(&self, _path: impl Into<String>) -> IOResult<()> {
+    pub fn save(&mut self, path: impl Into<String>) -> IOResult<()> {
+        let mut file = File::create_new(path.into())?;
+
+        file.write_all(&mut self.file_header.bytes)?;
+        file.write_all(&mut self.dib_header.bytes)?;
+        file.write_all(&mut self.buffer.bytes)?;
+
         Ok(())
     }
 }
@@ -170,4 +176,14 @@ pub fn buffer() {
     assert_eq!(0, buffer.pixels[0].red);
     assert_eq!(56, buffer.pixels[0].green);
     assert_eq!(117, buffer.pixels[0].blue);
+}
+
+#[test]
+pub fn save() {
+    let mut image01 = Bitmap::open("./images/tower.bmp").unwrap();
+    image01.save("./images/clone.bmp").unwrap();
+
+    let image02 = Bitmap::open("./images/clone.bmp").unwrap();
+
+    assert_eq!(image01.file_header.size_file, image02.file_header.size_file);
 }
