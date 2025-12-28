@@ -31,11 +31,11 @@ impl Bitmap {
 }
 
 struct FileHeader {
+    pub bytes: [u8; 14],
     pub identify: String,
     pub size_file: u32,
     pub pixel_start_of: u32,
 }
-
 impl FileHeader {
     pub fn new(image: &mut File) -> Self {
         let mut extract = [0_u8; 14];
@@ -50,6 +50,7 @@ impl FileHeader {
         let pixel_start_of = u32_from_le_bytes(&extract[10..]);
 
         Self {
+            bytes: extract,
             identify,
             size_file,
             pixel_start_of,
@@ -58,30 +59,32 @@ impl FileHeader {
 }
 
 struct DIBHeader {
+    bytes: Vec<u8>,
     pub size_header: u32,
     pub width: i32,    // 0..3
     pub height: i32,   // 4..7
     pub pixels: u16,   // 10..11
     pub raw_size: u32, // 16..19
 }
-
 impl DIBHeader {
     pub fn new(image: &mut File) -> Self {
-        let mut bytes = [0_u8; 4];
+        let mut bytes: Vec<u8> = vec![0_u8; (4) as usize];
         image.read_exact(&mut bytes).unwrap();
 
         let size_header = u32_from_le_bytes(&bytes);
 
-        let mut bytes = vec![0_u8; (size_header - 4) as usize];
-        image.read_exact(&mut bytes).unwrap();
+        let mut extract = vec![0_u8; (size_header - 4) as usize];
+        image.read_exact(&mut extract).unwrap();
 
-        let width = i32_from_le_bytes(&bytes[0..=3]);
-        let height = i32_from_le_bytes(&bytes[4..=7]);
+        let width = i32_from_le_bytes(&extract[0..=3]);
+        let height = i32_from_le_bytes(&extract[4..=7]);
 
-        let pixels = u16::from_le_bytes([bytes[10], bytes[11]]);
-        let raw_size = u32_from_le_bytes(&bytes[16..=19]);
+        let pixels = u16::from_le_bytes([extract[10], extract[11]]);
+        let raw_size = u32_from_le_bytes(&extract[16..=19]);
 
+        bytes.append(&mut extract);
         DIBHeader {
+            bytes: bytes,
             size_header,
             width,
             height,
@@ -92,9 +95,9 @@ impl DIBHeader {
 }
 
 struct Buffer {
+    pub bytes: Vec<u8>,
     pub pixels: Vec<RGB>,
 }
-
 impl Buffer {
     pub fn new(image: &mut File, dib: &DIBHeader) -> Self {
         let padding = {
@@ -105,12 +108,12 @@ impl Buffer {
         let total_pixels = i32::abs(dib.width * dib.height);
         let bytes_per_pixels = dib.pixels / 8;
 
-        let mut extract = vec![0_u8; (total_pixels * (bytes_per_pixels) as i32) as usize];
+        let mut bytes = vec![0_u8; (total_pixels * (bytes_per_pixels) as i32) as usize];
         let mut pixels = vec![RGB::default(); total_pixels as usize];
 
-        image.read_exact(&mut extract).unwrap();
+        image.read_exact(&mut bytes).unwrap();
 
-        let mut index = extract.len() - 1;
+        let mut index = bytes.len() - 1;
 
         for _ in 0..i32::abs(dib.height) {
             index -= padding;
@@ -118,10 +121,10 @@ impl Buffer {
                 let pixel = pixels.get_mut(index / 3).unwrap();
                 for i in 0..bytes_per_pixels {
                     match i {
-                        0 => pixel.red = extract[index],
-                        1 => pixel.green = extract[index],
-                        2 => pixel.blue = extract[index],
-                        _ => pixel.alpha = Some(extract[index]),
+                        0 => pixel.red = bytes[index],
+                        1 => pixel.green = bytes[index],
+                        2 => pixel.blue = bytes[index],
+                        _ => pixel.alpha = Some(bytes[index]),
                     }
 
                     index = index.checked_sub(1).unwrap_or(0);
@@ -129,7 +132,7 @@ impl Buffer {
             }
         }
 
-        Self { pixels }
+        Self { bytes, pixels }
     }
 }
 
