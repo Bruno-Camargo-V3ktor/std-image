@@ -34,6 +34,18 @@ impl Bitmap {
 
         Ok(())
     }
+
+    pub fn get_pixel(&self, x: u32, y: u32) -> Option<&RGB> {
+        let width = self.dib_header.width.abs() as u32;
+        let height = self.dib_header.height.abs() as u32;
+
+        if x >= width && y >= height {
+            return None;
+        }
+
+        let index = (self.buffer.pixels.len() - 1) - ((y * width + x) as usize);
+        self.buffer.pixels.get(index)
+    }
 }
 
 struct FileHeader {
@@ -186,4 +198,12 @@ pub fn save() {
     let image02 = Bitmap::open("./images/clone.bmp").unwrap();
 
     assert_eq!(image01.file_header.size_file, image02.file_header.size_file);
+}
+
+#[test]
+pub fn get_pixel() {
+    let mut image01 = Bitmap::open("./images/tower.bmp").unwrap();
+    let pixel = image01.get_pixel(599, 399).unwrap();
+
+    assert_eq!(RGB::new(0, 56, 117, None), *pixel);
 }
