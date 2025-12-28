@@ -35,6 +35,30 @@ impl Bitmap {
         Ok(())
     }
 
+    pub fn widht(&self) -> u32 {
+        self.dib_header.width.abs() as u32
+    }
+
+    pub fn height(&self) -> u32 {
+        self.dib_header.height.abs() as u32
+    }
+
+    pub fn size_in_bytes(&self) -> u32 {
+        self.file_header.size_file
+    }
+
+    pub fn identify(&self) -> &str {
+        &self.file_header.identify
+    }
+
+    pub fn pixels_per_byte(&self) -> u16 {
+        self.dib_header.pixels
+    }
+
+    pub fn get_pixels(&self) -> &[RGB] {
+        &self.buffer.pixels
+    }
+
     pub fn get_pixel(&self, x: u32, y: u32) -> Option<&RGB> {
         let width = self.dib_header.width.abs() as u32;
         let height = self.dib_header.height.abs() as u32;
