@@ -70,6 +70,16 @@ impl Bitmap {
         let index = (self.surface.pixels.len() - 1) - ((y * width + x) as usize);
         self.surface.pixels.get(index)
     }
+
+    pub fn flip_h(&mut self) {
+        for i in 0..self.surface.column_size {
+            let start = (0 + (i * self.surface.row_size)) as usize;
+            let end = (self.surface.row_size + (i * self.surface.row_size)) as usize;
+            let line = &mut self.surface.pixels[start..end];
+
+            line.reverse();
+        }
+    }
 }
 
 #[derive(Debug)]
