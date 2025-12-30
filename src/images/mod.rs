@@ -1,5 +1,7 @@
 use std::{io::Result as IOResult, ops::Range};
 
+use crate::filters::{Filter, FilterError};
+
 pub mod bitmap;
 
 // Enums...
@@ -34,6 +36,8 @@ pub trait Image {
         Self: Sized;
 
     fn save(&mut self, path: impl Into<String>) -> IOResult<()>;
+
+    fn filter(&mut self, filter: impl Filter) -> Result<(), FilterError>;
 
     fn widht(&self) -> usize;
 

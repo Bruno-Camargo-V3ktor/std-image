@@ -1,4 +1,6 @@
 use crate::images::{Image, bitmap::Bitmap};
+
+mod filters;
 mod images;
 
 fn main() {

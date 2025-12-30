@@ -55,6 +55,13 @@ impl Image for Bitmap {
         Ok(())
     }
 
+    fn filter(
+        &mut self,
+        filter: impl crate::filters::Filter,
+    ) -> Result<(), crate::filters::FilterError> {
+        Ok(())
+    }
+
     fn widht(&self) -> usize {
         self.dib_header.width.abs() as usize
     }
