@@ -17,16 +17,6 @@ impl Bitmap {
     pub fn identify(&self) -> &str {
         &self.file_header.identify
     }
-
-    pub fn flip_h(&mut self) {
-        for i in 0..self.surface.column_size {
-            let start = (0 + (i * self.surface.row_size)) as usize;
-            let end = (self.surface.row_size + (i * self.surface.row_size)) as usize;
-            let line = &mut self.surface.pixels[start..end];
-
-            line.reverse();
-        }
-    }
 }
 
 impl Image for Bitmap {
@@ -59,7 +49,7 @@ impl Image for Bitmap {
         &mut self,
         filter: impl crate::filters::Filter,
     ) -> Result<(), crate::filters::FilterError> {
-        Ok(())
+        filter.apply(self)
     }
 
     fn widht(&self) -> usize {

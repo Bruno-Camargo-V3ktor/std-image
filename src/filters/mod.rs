@@ -1,6 +1,8 @@
 use crate::images::Image;
 use std::{error::Error, fmt::Display};
 
+pub mod flip_h;
+
 // Traits...
 pub trait Filter {
     fn apply(&self, image: &mut impl Image) -> Result<(), FilterError>;
