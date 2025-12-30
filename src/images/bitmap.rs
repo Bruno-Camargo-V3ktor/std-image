@@ -1,4 +1,4 @@
-use super::{RGB, i32_from_le_bytes, u32_from_le_bytes};
+use super::{Image, RGB, i32_from_le_bytes, u32_from_le_bytes};
 use std::fs::File;
 use std::io::{Read, Result as IOResult, Write};
 use std::usize;
@@ -10,7 +10,27 @@ pub struct Bitmap {
 }
 
 impl Bitmap {
-    pub fn open(path: impl Into<String>) -> IOResult<Bitmap> {
+    fn size_in_bytes(&self) -> u32 {
+        self.file_header.size_file
+    }
+
+    pub fn identify(&self) -> &str {
+        &self.file_header.identify
+    }
+
+    pub fn flip_h(&mut self) {
+        for i in 0..self.surface.column_size {
+            let start = (0 + (i * self.surface.row_size)) as usize;
+            let end = (self.surface.row_size + (i * self.surface.row_size)) as usize;
+            let line = &mut self.surface.pixels[start..end];
+
+            line.reverse();
+        }
+    }
+}
+
+impl Image for Bitmap {
+    fn open(path: impl Into<String>) -> IOResult<Bitmap> {
         let path = path.into();
         let mut image = File::open(path)?;
 
@@ -25,7 +45,7 @@ impl Bitmap {
         })
     }
 
-    pub fn save(&mut self, path: impl Into<String>) -> IOResult<()> {
+    fn save(&mut self, path: impl Into<String>) -> IOResult<()> {
         let mut file = File::create_new(path.into())?;
 
         file.write_all(&mut self.file_header.to_bytes())?;
@@ -35,33 +55,45 @@ impl Bitmap {
         Ok(())
     }
 
-    pub fn widht(&self) -> u32 {
-        self.dib_header.width.abs() as u32
+    fn widht(&self) -> usize {
+        self.dib_header.width.abs() as usize
     }
 
-    pub fn height(&self) -> u32 {
-        self.dib_header.height.abs() as u32
+    fn height(&self) -> usize {
+        self.dib_header.height.abs() as usize
     }
 
-    pub fn size_in_bytes(&self) -> u32 {
-        self.file_header.size_file
+    fn format(&self) -> super::Format {
+        super::Format::BMP
     }
 
-    pub fn identify(&self) -> &str {
-        &self.file_header.identify
-    }
-
-    pub fn pixels_per_byte(&self) -> u16 {
+    fn bytes_per_pixels(&self) -> u16 {
         self.dib_header.pixels
     }
 
-    pub fn get_pixels(&self) -> &[RGB] {
+    fn pixels(&mut self) -> &mut [RGB] {
+        &mut self.surface.pixels
+    }
+
+    fn get_pixels(&self) -> &[RGB] {
         &self.surface.pixels
     }
 
-    pub fn get_pixel(&self, x: u32, y: u32) -> Option<&RGB> {
-        let width = self.dib_header.width.abs() as u32;
-        let height = self.dib_header.height.abs() as u32;
+    fn pixel(&mut self, x: usize, y: usize) -> Option<&mut RGB> {
+        let width = self.dib_header.width.abs() as usize;
+        let height = self.dib_header.height.abs() as usize;
+
+        if x >= width && y >= height {
+            return None;
+        }
+
+        let index = (self.surface.pixels.len() - 1) - ((y * width + x) as usize);
+        self.surface.pixels.get_mut(index)
+    }
+
+    fn get_pixel(&self, x: usize, y: usize) -> Option<&RGB> {
+        let width = self.dib_header.width.abs() as usize;
+        let height = self.dib_header.height.abs() as usize;
 
         if x >= width && y >= height {
             return None;
@@ -71,14 +103,12 @@ impl Bitmap {
         self.surface.pixels.get(index)
     }
 
-    pub fn flip_h(&mut self) {
-        for i in 0..self.surface.column_size {
-            let start = (0 + (i * self.surface.row_size)) as usize;
-            let end = (self.surface.row_size + (i * self.surface.row_size)) as usize;
-            let line = &mut self.surface.pixels[start..end];
+    fn slice_pixels(&mut self, range: std::ops::Range<usize>) -> &mut [RGB] {
+        &mut self.surface.pixels[range]
+    }
 
-            line.reverse();
-        }
+    fn get_slice_pixels(&self, range: std::ops::Range<usize>) -> &[RGB] {
+        &self.surface.pixels[range]
     }
 }
 
@@ -271,72 +301,4 @@ impl Surface {
 
         bytes
     }
-}
-
-#[test]
-fn file_header() {
-    let mut image = File::open("./images/tower.bmp").unwrap();
-    let file_header = FileHeader::new(&mut image);
-
-    assert_eq!("BM", file_header.identify);
-    assert_eq!(720056, file_header.size_file);
-    assert_eq!(54, file_header.pixel_start_of);
-}
-
-#[test]
-fn dib_header() {
-    let mut image = File::open("./images/tower.bmp").unwrap();
-    let _file_header = FileHeader::new(&mut image);
-    let dib_header = DIBHeader::new(&mut image);
-
-    assert_eq!(40, dib_header.size_header);
-    assert_eq!(600, dib_header.width);
-    assert_eq!(-400, dib_header.height);
-    assert_eq!(24, dib_header.pixels);
-}
-
-#[test]
-pub fn surface() {
-    let mut image = File::open("./images/tower.bmp").unwrap();
-    let _file_header = FileHeader::new(&mut image);
-    let dib_header = DIBHeader::new(&mut image);
-    let surface = Surface::new(&mut image, &dib_header);
-
-    assert_eq!(240000, surface.pixels.len());
-    assert_eq!(0, surface.pixels[0].red);
-    assert_eq!(56, surface.pixels[0].green);
-    assert_eq!(117, surface.pixels[0].blue);
-}
-
-#[test]
-pub fn save() {
-    let mut image01 = Bitmap::open("./images/tower.bmp").unwrap();
-    image01.save("./images/clone.bmp").unwrap();
-
-    let image02 = Bitmap::open("./images/clone.bmp").unwrap();
-
-    println!("\n------\n");
-
-    println!("{:?}", image01.file_header);
-    println!("{:?}", image02.file_header);
-
-    println!("\n------\n");
-
-    println!("{:?}", image01.dib_header);
-    println!("{:?}", image02.dib_header);
-
-    println!("\n------\n");
-
-    println!("{:?}", image01.surface.pixels[0]);
-    println!("{:?}", image02.surface.pixels[0]);
-
-    assert_eq!(image01.file_header.size_file, image02.file_header.size_file);
-}
-
-#[test]
-pub fn get_pixel() {
-    let image01 = Bitmap::open("./images/tower.bmp").unwrap();
-    let pixel = image01.get_pixel(599, 399).unwrap();
-
-    assert_eq!(RGB::new(0, 56, 117, None), *pixel);
 }

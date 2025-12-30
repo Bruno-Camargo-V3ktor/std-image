@@ -1,4 +1,4 @@
-use crate::images::bitmap::Bitmap;
+use crate::images::{Image, bitmap::Bitmap};
 mod images;
 
 fn main() {
