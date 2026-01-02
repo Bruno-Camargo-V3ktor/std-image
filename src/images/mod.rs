@@ -27,6 +27,22 @@ impl RGB {
             alpha,
         }
     }
+
+    pub fn add_red(&mut self, red: u8) {
+        self.red = self.red.checked_add(red).unwrap_or(255);
+    }
+
+    pub fn add_green(&mut self, red: u8) {
+        self.green = self.green.checked_add(green).unwrap_or(255);
+    }
+
+    pub fn add_blue(&mut self, blue: u8) {
+        self.blue = self.blue.checked_add(blue).unwrap_or(255);
+    }
+
+    pub fn add_aplha(&mut self, alpha: u8) {
+        self.alpha = self.alpha.checked_add(alpha).unwrap_or(255);
+    }
 }
 
 // Traits...
