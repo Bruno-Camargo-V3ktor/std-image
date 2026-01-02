@@ -32,7 +32,7 @@ impl RGB {
         self.red = self.red.checked_add(red).unwrap_or(255);
     }
 
-    pub fn add_green(&mut self, red: u8) {
+    pub fn add_green(&mut self, green: u8) {
         self.green = self.green.checked_add(green).unwrap_or(255);
     }
 
@@ -41,7 +41,9 @@ impl RGB {
     }
 
     pub fn add_aplha(&mut self, alpha: u8) {
-        self.alpha = self.alpha.checked_add(alpha).unwrap_or(255);
+        if let Some(value) = &mut self.alpha {
+            *value = value.checked_add(alpha).unwrap_or(255);
+        }
     }
 }
 
