@@ -12,10 +12,10 @@ pub enum Format {
 // Structs...
 #[derive(Default, Debug, Clone, PartialEq, Eq)]
 pub struct RGB {
-    pub red: u8,
-    pub green: u8,
-    pub blue: u8,
-    pub alpha: Option<u8>,
+    red: u8,
+    green: u8,
+    blue: u8,
+    alpha: Option<u8>,
 }
 
 impl RGB {
@@ -32,17 +32,71 @@ impl RGB {
         self.red = self.red.checked_add(red).unwrap_or(255);
     }
 
+    pub fn overflowing_add_red(&mut self, value: u8) {
+        self.red = self.red.overflowing_add(value).0;
+    }
+
     pub fn add_green(&mut self, green: u8) {
         self.green = self.green.checked_add(green).unwrap_or(255);
+    }
+
+    pub fn overflowing_add_green(&mut self, value: u8) {
+        self.green = self.green.overflowing_add(value).0;
     }
 
     pub fn add_blue(&mut self, blue: u8) {
         self.blue = self.blue.checked_add(blue).unwrap_or(255);
     }
 
+    pub fn overflowing_add_blue(&mut self, value: u8) {
+        self.blue = self.blue.overflowing_add(value).0;
+    }
+
     pub fn add_aplha(&mut self, alpha: u8) {
         if let Some(value) = &mut self.alpha {
             *value = value.checked_add(alpha).unwrap_or(255);
+        }
+    }
+
+    pub fn overflowing_add_aplha(&mut self, value: u8) {
+        if let Some(alpha) = &mut self.alpha {
+            *alpha = alpha.overflowing_add(value).0;
+        }
+    }
+
+    pub fn sub_red(&mut self, red: u8) {
+        self.red = self.red.checked_sub(red).unwrap_or(0);
+    }
+
+    pub fn sub_green(&mut self, green: u8) {
+        self.green = self.green.checked_sub(green).unwrap_or(0);
+    }
+
+    pub fn sub_blue(&mut self, blue: u8) {
+        self.blue = self.blue.checked_sub(blue).unwrap_or(0);
+    }
+
+    pub fn sub_aplha(&mut self, alpha: u8) {
+        if let Some(value) = &mut self.alpha {
+            *value = value.checked_sub(alpha).unwrap_or(0);
+        }
+    }
+
+    pub fn overflowing_sub_red(&mut self, value: u8) {
+        self.red = self.red.overflowing_sub(value).0;
+    }
+
+    pub fn overflowing_sub_green(&mut self, value: u8) {
+        self.green = self.green.overflowing_sub(value).0;
+    }
+
+    pub fn overflowing_sub_blue(&mut self, value: u8) {
+        self.blue = self.blue.overflowing_sub(value).0;
+    }
+
+    pub fn overflowing_sub_aplha(&mut self, value: u8) {
+        if let Some(alpha) = &mut self.alpha {
+            *alpha = alpha.overflowing_sub(value).0;
         }
     }
 }
