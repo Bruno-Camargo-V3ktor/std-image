@@ -2,6 +2,7 @@ use crate::images::Image;
 use std::{error::Error, fmt::Display};
 
 pub mod flip_h;
+pub mod negative;
 
 // Traits...
 pub trait Filter {

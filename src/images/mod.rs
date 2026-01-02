@@ -28,6 +28,38 @@ impl RGB {
         }
     }
 
+    pub fn red(&self) -> u8 {
+        self.red
+    }
+
+    pub fn green(&self) -> u8 {
+        self.green
+    }
+
+    pub fn blue(&self) -> u8 {
+        self.blue
+    }
+
+    pub fn alpha(&self) -> Option<u8> {
+        self.alpha.clone()
+    }
+
+    pub fn set_red(&mut self, value: u8) {
+        self.red = value;
+    }
+
+    pub fn set_green(&mut self, value: u8) {
+        self.green = value;
+    }
+
+    pub fn set_blue(&mut self, value: u8) {
+        self.blue = value;
+    }
+
+    pub fn set_alpha(&mut self, value: Option<u8>) {
+        self.alpha = value;
+    }
+
     pub fn add_red(&mut self, red: u8) {
         self.red = self.red.checked_add(red).unwrap_or(255);
     }

@@ -1,5 +1,5 @@
 use crate::{
-    filters::flip_h::FlipH,
+    filters::{flip_h::FlipH, negative::Negative},
     images::{Image, bitmap::Bitmap},
 };
 
@@ -15,4 +15,8 @@ fn main() {
     let mut bitmap = Bitmap::open("./images/tower.bmp").unwrap();
     let _ = bitmap.filter(FlipH::rect((0, 0), (600, 200)));
     let _ = bitmap.save("./images/clone2.bmp").unwrap();
+
+    let mut bitmap = Bitmap::open("./images/negative.bmp").unwrap();
+    let _ = bitmap.filter(Negative);
+    let _ = bitmap.save("./images/negative2.bmp").unwrap();
 }
