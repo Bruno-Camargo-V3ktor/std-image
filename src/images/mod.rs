@@ -131,6 +131,16 @@ impl RGB {
             *alpha = alpha.overflowing_sub(value).0;
         }
     }
+
+    pub fn grayscale(&self) -> Self {
+        let m = ((self.red() as usize + self.green() as usize + self.blue() as usize) / 3) as u8;
+        Self {
+            red: m,
+            green: m,
+            blue: m,
+            alpha: self.alpha.clone(),
+        }
+    }
 }
 
 // Traits...
