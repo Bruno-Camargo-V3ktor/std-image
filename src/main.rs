@@ -41,6 +41,6 @@ fn main() {
     let _ = bitmap.save("./images/blur1.bmp").unwrap();
 
     let mut bitmap = Bitmap::open("./images/tower.bmp").unwrap();
-    let _ = bitmap.filter(BoxBlur(2));
+    let _ = bitmap.filter(BoxBlur(10));
     let _ = bitmap.save("./images/blur2.bmp").unwrap();
 }

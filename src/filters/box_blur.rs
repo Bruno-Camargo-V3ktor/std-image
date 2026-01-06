@@ -15,9 +15,8 @@ impl Filter for BoxBlur {
         let widht = image.widht();
         let height = image.height();
         let size = widht * height;
-        let divisor = (self.0 * 2 + 1) as isize;
+        let step = self.0 * 2 + 1;
 
-        let pixels = image.pixels();
         let mut buffer = vec![RGB::default(); size];
 
         for index in 0..size {
@@ -26,29 +25,42 @@ impl Filter for BoxBlur {
             let mut green = 0;
             let mut blue = 0;
 
-            let mut new_index = (index as isize) - (self.0 as isize) - (self.0 * widht) as isize;
+            let start_index = (index as isize) - (self.0 * widht) as isize;
 
-            for i in 0..divisor {
-                new_index += i * (widht as isize);
-                for j in 0..divisor {
-                    new_index += j;
-                    if new_index >= 0 && new_index < (size as isize) {
-                        let color = &pixels[new_index as usize];
-                        red += color.red() as u32;
-                        green += color.green() as u32;
-                        blue += color.blue() as u32;
-                        counter += 1;
-                    }
+            for i in 0..step {
+                let index = start_index + (i as isize * widht as isize);
+                if index < 0 || index >= size as isize {
+                    continue;
+                }
+
+                let index = index as usize;
+                let row_start = (index / widht) * widht;
+                let row_end = row_start + widht;
+
+                let start =
+                    (index.checked_sub(self.0).unwrap_or_default()).clamp(row_start, row_end);
+                let end = (index.checked_add(self.0).unwrap_or(usize::max_value()))
+                    .clamp(row_start, row_end);
+
+                if end >= size {
+                    continue;
+                }
+
+                for color in image.get_slice_pixels(start..end + 1) {
+                    red += color.red() as u32;
+                    green += color.green() as u32;
+                    blue += color.blue() as u32;
+                    counter += 1;
                 }
             }
 
             let color = &mut buffer[index];
-            color.set_red((red / counter) as u8);
-            color.set_green((green / counter) as u8);
-            color.set_blue((blue / counter) as u8);
+            color.set_red((red.checked_div(counter).unwrap_or_default()) as u8);
+            color.set_green((green.checked_div(counter).unwrap_or_default()) as u8);
+            color.set_blue((blue.checked_div(counter).unwrap_or_default()) as u8);
         }
 
-        for color in pixels {
+        for color in image.pixels() {
             *color = buffer.remove(0);
         }
 
