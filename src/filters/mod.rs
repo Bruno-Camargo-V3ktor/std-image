@@ -4,6 +4,7 @@ use std::{error::Error, fmt::Display};
 pub mod box_blur;
 pub mod flip_h;
 pub mod flip_v;
+pub mod grayscale;
 pub mod negative;
 
 // Traits...
