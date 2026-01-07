@@ -1,6 +1,41 @@
 use super::{Filter, FilterError};
 
-pub struct EdgeDetection;
+pub struct EdgeDetection {
+    gray_scale: bool,
+    limit: u8,
+}
+
+impl EdgeDetection {
+    pub fn grayscale() -> Self {
+        Self {
+            gray_scale: true,
+            limit: 0,
+        }
+    }
+
+    pub fn limit(value: u8) -> Self {
+        Self {
+            gray_scale: false,
+            limit: value,
+        }
+    }
+
+    pub fn grayscale_with_limit(value: u8) -> Self {
+        Self {
+            gray_scale: true,
+            limit: value,
+        }
+    }
+}
+
+impl Default for EdgeDetection {
+    fn default() -> Self {
+        Self {
+            gray_scale: false,
+            limit: 150,
+        }
+    }
+}
 
 //# # #    //# # #   //# # #
 const KERNEL_TABLE: [i16; 9] = [-1, 0, 1, -2, 0, 2, -1, 0, 1];
@@ -52,13 +87,20 @@ impl Filter for EdgeDetection {
             let magnitude = (gx.abs() + gy.abs()).clamp(0, 255) as u8;
 
             let color = &mut image.pixels()[index];
-            color.set_value(magnitude);
 
-            /*if magnitude > 80 {
-                color.set_value(255);
+            if self.gray_scale {
+                if magnitude > self.limit {
+                    color.set_value(magnitude);
+                } else {
+                    color.set_value(0);
+                }
             } else {
-                color.set_value(0)
-            };*/
+                if magnitude > self.limit {
+                    color.set_value(255);
+                } else {
+                    color.set_value(0);
+                }
+            }
         }
 
         Ok(())
