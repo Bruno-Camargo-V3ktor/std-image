@@ -141,6 +141,12 @@ impl RGB {
             alpha: self.alpha.clone(),
         }
     }
+
+    pub fn set_value(&mut self, value: u8) {
+        self.red = value;
+        self.green = value;
+        self.blue = value;
+    }
 }
 
 // Traits...
