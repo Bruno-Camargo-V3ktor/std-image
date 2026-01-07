@@ -3,6 +3,7 @@ use std::fs::File;
 use std::io::{Read, Result as IOResult, Write};
 use std::usize;
 
+/// Struct para representa um Bitmap Image, nao sendo obragorio o uso podendo implementar sua propria estrutura
 pub struct Bitmap {
     file_header: FileHeader,
     dib_header: DIBHeader,

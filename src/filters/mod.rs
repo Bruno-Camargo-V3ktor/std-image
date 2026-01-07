@@ -9,11 +9,13 @@ pub mod grayscale;
 pub mod negative;
 
 // Traits...
+/// Trait que representa um filtro para ser aplicado em uma imagem, sendo generico para qualquer image
 pub trait Filter {
     fn apply(&self, image: &mut impl Image) -> Result<(), FilterError>;
 }
 
 // Enums...
+/// Erro customizado para quando um filtro é aplicado
 #[derive(Debug)]
 pub enum FilterError {
     InvalidFormat,

@@ -5,11 +5,13 @@ use crate::filters::{Filter, FilterError};
 pub mod bitmap;
 
 // Enums...
+/// Enums que representa os possivel formatos de imagens
 pub enum Format {
     BMP,
 }
 
 // Structs...
+/// Struct que representa uma cor RGBa, onde alpha é opcional
 #[derive(Default, Debug, Clone, PartialEq, Eq)]
 pub struct RGB {
     red: u8,
@@ -150,6 +152,7 @@ impl RGB {
 }
 
 // Traits...
+/// Trait que representa uma image generica, com os metodos que todo imagem deve ter
 pub trait Image {
     fn open(path: impl Into<String>) -> IOResult<Self>
     where

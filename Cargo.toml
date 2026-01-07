@@ -2,5 +2,9 @@
 name = "std-image"
 version = "0.1.0"
 edition = "2024"
+description = "Uma lib para tratar imagens de maneira generica, abrindo e aplicando filtros"
+license = "MIT"
+repository = "https://github.com/Bruno-Camargo-V3ktor/std-image"
+keywords = ["graphics", "image"]
 
 [dependencies]
